@@ -1,6 +1,6 @@
 # PortfolioLab - Complete User Guide
 
-## 🇦🇪 Next-Generation Portfolio Analysis Tool • Made in UAE
+## 🇦🇪 Next-Generation Portfolio Analysis Tool 
 
 A futuristic, client-side portfolio analysis tool with 3D graphics, drag-and-drop interface, and intelligent bond calculations. **100% privacy-first** - all calculations happen in your browser.
 
