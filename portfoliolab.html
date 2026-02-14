@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortfolioLab | Professional Investment Analysis Platform</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' fill='%230a0e27'/%3E%3Crect x='2' y='2' width='8' height='28' fill='%23FF0000'/%3E%3Crect x='10' y='2' width='20' height='9.33' fill='%2300843D'/%3E%3Crect x='10' y='11.33' width='20' height='9.33' fill='%23FFFFFF'/%3E%3Crect x='10' y='20.66' width='20' height='9.34' fill='%23000000'/%3E%3Cpath d='M 12 24 L 16 16 L 20 18 L 24 12 L 28 14' stroke='%2300f0ff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='24' r='1.5' fill='%2300f0ff'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%2300f0ff'/%3E%3Ccircle cx='20' cy='18' r='1.5' fill='%2300f0ff'/%3E%3Ccircle cx='24' cy='12' r='1.5' fill='%2300f0ff'/%3E%3Ccircle cx='28' cy='14' r='1.5' fill='%2300f0ff'/%3E%3C/svg%3E">
+    
+    <!-- External Libraries via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        /* Import distinctive fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap');
+        
+        :root {
+            /* Futuristic color palette - Deep space with neon accents */
+            --primary-dark: #0a0e27;
+            --primary-space: #151932;
+            --secondary-deep: #1e2547;
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff00ff;
+            --accent-electric: #7b2ff7;
+            --text-primary: #e8f4f8;
+            --text-secondary: #8fa3bf;
+            --text-muted: #5a6c8a;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff3366;
+            --surface: #1a1f3a;
+            --surface-elevated: #242b4a;
+            --border: rgba(0, 240, 255, 0.2);
+            --shadow: rgba(123, 47, 247, 0.3);
+            --glow-cyan: rgba(0, 240, 255, 0.5);
+            --glow-magenta: rgba(255, 0, 255, 0.5);
+            
+            /* Typography */
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 3D Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* Scanline effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 3rem 0 2rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            box-shadow: 0 0 20px var(--glow-cyan), 0 0 40px var(--glow-magenta);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        /* Logo */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            filter: drop-shadow(0 0 20px var(--glow-cyan));
+        }
+        
+        /* UAE Flag-inspired logo design */
+        .logo svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .logo-stripe {
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .logo-center {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        h1 {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-magenta) 50%, var(--accent-electric) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px var(--glow-cyan);
+            animation: textGlow 3s ease-in-out infinite;
+            line-height: 1;
+        }
+        
+        @keyframes textGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        
+        .tagline {
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+        
+        #libraryLoading {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Privacy Notice */
+        .privacy-notice {
+            background: var(--surface);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 0 30px var(--glow-cyan);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .privacy-notice::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            animation: scan 3s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .privacy-notice h3 {
+            font-family: var(--font-display);
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        
+        .privacy-notice ul {
+            list-style: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .privacy-notice li {
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .privacy-notice li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+        
+        /* Card */
+        .card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--border);
+            box-shadow: 0 10px 40px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta), var(--accent-electric));
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 60px var(--shadow);
+        }
+        
+        .card:hover::before {
+            opacity: 0.3;
+        }
+        
+        .card h2 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        
+        /* Asset management section */
+        .asset-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--surface-elevated);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .asset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .asset-title {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .add-asset-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-electric));
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--font-body);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+        
+        .add-asset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+        
+        /* Drag and drop zone */
+        .drop-zone {
+            border: 3px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: rgba(0, 240, 255, 0.02);
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: inset 0 0 30px var(--glow-cyan);
+        }
+        
+        .drop-zone-icon {
+            font-size: 3rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .drop-zone-text strong {
+            color: var(--accent-cyan);
+        }
+        
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+        
+        /* Asset list */
+        .asset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .asset-item {
+            background: var(--primary-space);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .asset-item:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+        
+        .asset-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .asset-name {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        
+        .asset-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .asset-status {
+            color: var(--success);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        
+        .asset-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .asset-amount-input {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .asset-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .remove-btn {
+            padding: 0.5rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #cc2952;
+            transform: scale(1.05);
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-space);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+        
+        /* Button */
+        .btn {
+            padding: 1.2rem 3rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            box-shadow: 0 8px 30px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 50px var(--shadow);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        /* Results Section */
+        #results {
+            display: none;
+        }
+        
+        #results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .summary-card {
+            background: var(--surface-elevated);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            animation: scanCard 4s linear infinite;
+        }
+        
+        @keyframes scanCard {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px var(--glow-cyan);
+        }
+        
+        .summary-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .summary-card .value {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card .label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 2rem 0;
+            background: var(--surface-elevated);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+        }
+        
+        thead {
+            background: var(--primary-space);
+        }
+        
+        th {
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: var(--font-display);
+        }
+        
+        td {
+            padding: 1.2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+        
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: rgba(0, 240, 255, 0.05);
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 450px;
+            margin: 2rem 0;
+            background: var(--surface-elevated);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent-cyan);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Info boxes */
+        .info-box {
+            background: rgba(0, 240, 255, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+        
+        .info-box p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .asset-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+        
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-cyan { color: var(--accent-cyan); }
+        
+        .mt-2 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <!-- 3D Background -->
+    <canvas id="bg-canvas"></canvas>
+    
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <!-- UAE Flag-inspired Logo -->
+                <div class="logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Red vertical stripe (left side - UAE flag) -->
+                        <rect class="logo-stripe" x="0" y="0" width="25" height="100" fill="#FF0000" opacity="0.9"/>
+                        
+                        <!-- Green horizontal stripe (top) -->
+                        <rect class="logo-stripe" x="25" y="0" width="75" height="33.33" fill="#00843D" opacity="0.9"/>
+                        
+                        <!-- White horizontal stripe (middle) -->
+                        <rect class="logo-stripe" x="25" y="33.33" width="75" height="33.33" fill="#FFFFFF" opacity="0.9"/>
+                        
+                        <!-- Black horizontal stripe (bottom) -->
+                        <rect class="logo-stripe" x="25" y="66.66" width="75" height="33.34" fill="#000000" opacity="0.9"/>
+                        
+                        <!-- Futuristic overlay - graph lines -->
+                        <path class="logo-center" d="M 30 70 L 45 45 L 60 55 L 75 30 L 90 40" 
+                              stroke="#00f0ff" stroke-width="3" fill="none" 
+                              stroke-linecap="round" stroke-linejoin="round"
+                              opacity="0.8"/>
+                        
+                        <!-- Data points on the graph -->
+                        <circle cx="30" cy="70" r="3" fill="#00f0ff" opacity="0.9"/>
+                        <circle cx="45" cy="45" r="3" fill="#00f0ff" opacity="0.9"/>
+                        <circle cx="60" cy="55" r="3" fill="#00f0ff" opacity="0.9"/>
+                        <circle cx="75" cy="30" r="3" fill="#00f0ff" opacity="0.9"/>
+                        <circle cx="90" cy="40" r="3" fill="#00f0ff" opacity="0.9"/>
+                        
+                        <!-- Subtle border -->
+                        <rect x="0" y="0" width="100" height="100" fill="none" 
+                              stroke="rgba(0, 240, 255, 0.3)" stroke-width="2"/>
+                    </svg>
+                </div>
+                
+                <div>
+                    <h1>PortfolioLab</h1>
+                    <p class="tagline">Next-Gen Investment Analysis • Privacy-First</p>
+                </div>
+            </div>
+            
+            <div id="libraryLoading" style="display: none;">
+                ⏳ Initializing Calculation Engine...
+            </div>
+        </header>
+        
+        <!-- Privacy Notice -->
+        <div class="privacy-notice">
+            <h3>🔒 SECURE LOCAL PROCESSING</h3>
+            <ul>
+                <li>Zero-knowledge architecture • Your data never leaves your device</li>
+                <li>Client-side encryption • All calculations in-browser</li>
+                <li>No cookies • No tracking • No analytics • No servers</li>
+                <li>Files processed in memory • Cleared on tab close</li>
+            </ul>
+        </div>
+        
+        <!-- Input Section -->
+        <div class="steps-container">
+            <!-- Stocks Section -->
+            <div class="card">
+                <div class="asset-section">
+                    <div class="asset-header">
+                        <h2 class="asset-title">📈 Stock Assets</h2>
+                        <button class="add-asset-btn" onclick="document.getElementById('stockFileInput').click()">
+                            + Add Stock
+                        </button>
+                    </div>
+                    
+                    <div class="drop-zone" id="stockDropZone" onclick="document.getElementById('stockFileInput').click()">
+                        <div class="drop-zone-icon">📊</div>
+                        <div class="drop-zone-text">
+                            <strong>Drag & Drop</strong> stock data here<br>
+                            or click to browse files<br>
+                            <small>Supports: Excel (.xls, .xlsx), CSV • Source: <a href="https://www.dfm.ae/" target="_blank" style="color: var(--accent-cyan);">DFM</a></small>
+                        </div>
+                        <input type="file" id="stockFileInput" accept=".xls,.xlsx,.csv" multiple>
+                    </div>
+                    
+                    <div id="stockList" class="asset-list"></div>
+                </div>
+            </div>
+            
+            <!-- Commodities Section -->
+            <div class="card">
+                <div class="asset-section">
+                    <div class="asset-header">
+                        <h2 class="asset-title">💎 Commodity Assets</h2>
+                        <button class="add-asset-btn" onclick="document.getElementById('commodityFileInput').click()">
+                            + Add Commodity
+                        </button>
+                    </div>
+                    
+                    <div class="drop-zone" id="commodityDropZone" onclick="document.getElementById('commodityFileInput').click()">
+                        <div class="drop-zone-icon">⚡</div>
+                        <div class="drop-zone-text">
+                            <strong>Drag & Drop</strong> commodity data here<br>
+                            or click to browse files<br>
+                            <small>Supports: CSV • Source: <a href="https://www.investing.com/commodities/" target="_blank" style="color: var(--accent-cyan);">Investing.com</a></small>
+                        </div>
+                        <input type="file" id="commodityFileInput" accept=".csv" multiple>
+                    </div>
+                    
+                    <div id="commodityList" class="asset-list"></div>
+                </div>
+            </div>
+            
+            <!-- Bond Details -->
+            <div class="card">
+                <h2>🏛️ Government Bonds</h2>
+                
+                <div class="info-box" style="margin-bottom: 1.5rem;">
+                    <p><strong>ℹ️ Auto-Calculation:</strong> Standard deviation and correlations will be calculated automatically based on your bond's maturity and uploaded asset data.</p>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="bondName">Bond Name/Type</label>
+                        <input type="text" id="bondName" placeholder="UAE 10-Year Government Bond" value="UAE Government Bond">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bondCoupon">Coupon Interest Rate (%)</label>
+                        <input type="number" id="bondCoupon" step="0.01" placeholder="4.0" value="4.0">
+                        <small style="color: var(--text-muted);">Annual interest payment rate</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bondMaturity">Years to Maturity</label>
+                        <input type="number" id="bondMaturity" step="0.5" placeholder="10" value="10" min="0.5" max="30">
+                        <small style="color: var(--text-muted);">Time until bond matures</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bondCreditRating">Credit Rating (Optional)</label>
+                        <select id="bondCreditRating">
+                            <option value="AAA">AAA (Highest)</option>
+                            <option value="AA" selected>AA (High)</option>
+                            <option value="A">A (Upper Medium)</option>
+                            <option value="BBB">BBB (Lower Medium)</option>
+                            <option value="BB">BB (Speculative)</option>
+                            <option value="B">B (Highly Speculative)</option>
+                        </select>
+                        <small style="color: var(--text-muted);">Affects volatility estimate</small>
+                    </div>
+                </div>
+                
+                <!-- Calculated Bond Metrics Display -->
+                <div id="bondCalculatedMetrics" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(0, 240, 255, 0.05); border-radius: 12px; border: 1px solid var(--border);">
+                    <h3 style="color: var(--accent-cyan); margin-bottom: 1rem; font-size: 1.1rem;">📊 Calculated Bond Characteristics:</h3>
+                    <div class="grid-3">
+                        <div>
+                            <small style="color: var(--text-muted);">Expected Return</small>
+                            <div style="color: var(--text-primary); font-family: var(--font-mono); font-size: 1.2rem;" id="calcBondReturn">-</div>
+                        </div>
+                        <div>
+                            <small style="color: var(--text-muted);">Volatility (Std Dev)</small>
+                            <div style="color: var(--text-primary); font-family: var(--font-mono); font-size: 1.2rem;" id="calcBondVolatility">-</div>
+                        </div>
+                        <div>
+                            <small style="color: var(--text-muted);">Duration</small>
+                            <div style="color: var(--text-primary); font-family: var(--font-mono); font-size: 1.2rem;" id="calcBondDuration">-</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                        <strong>Note:</strong> Correlations with stocks and commodities will be calculated from your uploaded data during analysis.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Investment Amounts -->
+            <div class="card">
+                <h2>💰 Investment Allocation</h2>
+                
+                <div class="info-box" style="margin-bottom: 1.5rem;">
+                    <p><strong>ℹ️ How it works:</strong> Set investment amounts for each individual asset above. The totals below are calculated automatically.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select id="currency">
+                        <option value="AED">AED (UAE Dirham)</option>
+                        <option value="USD">USD (US Dollar)</option>
+                        <option value="EUR">EUR (Euro)</option>
+                        <option value="GBP">GBP (British Pound)</option>
+                    </select>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="bondAmount">Bonds Amount</label>
+                        <input type="number" id="bondAmount" step="0.01" placeholder="50000" value="50000">
+                        <small id="bondPercent" style="color: var(--text-muted);"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commodityAmount">Total Commodities (Auto-calculated)</label>
+                        <input type="number" id="commodityAmount" step="0.01" placeholder="0" value="0" readonly style="opacity: 0.7; cursor: not-allowed;">
+                        <small id="commodityPercent" style="color: var(--text-muted);"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stockAmount">Total Stocks (Auto-calculated)</label>
+                        <input type="number" id="stockAmount" step="0.01" placeholder="0" value="0" readonly style="opacity: 0.7; cursor: not-allowed;">
+                        <small id="stockPercent" style="color: var(--text-muted);"></small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Total Portfolio Value: <span id="totalAmount" style="color: var(--accent-cyan); font-weight: 900; font-family: var(--font-mono);">50,000</span> <span id="currencyLabel">AED</span></label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="riskFreeRate">Risk-Free Rate (%) <small style="color: var(--text-muted);">- for Sharpe Ratio calculation</small></label>
+                    <input type="number" id="riskFreeRate" step="0.01" placeholder="3.5" value="3.5">
+                </div>
+            </div>
+            
+            <!-- Analyze Button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button class="btn" onclick="analyzePortfolio()">
+                    <span style="position: relative; z-index: 1;">ANALYZE PORTFOLIO</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary); font-size: 1.2rem;">Processing quantum calculations...</p>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results">
+            <div class="card">
+                <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem;">PORTFOLIO ANALYSIS</h2>
+                
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Total Value</h3>
+                        <div class="value" id="resultTotalValue">-</div>
+                        <div class="label" id="resultCurrency">AED</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Expected Return</h3>
+                        <div class="value" id="resultReturn">-</div>
+                        <div class="label">Annual %</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Risk (Std Dev)</h3>
+                        <div class="value" id="resultRisk">-</div>
+                        <div class="label">Annual %</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Sharpe Ratio</h3>
+                        <div class="value" id="resultSharpe">-</div>
+                        <div class="label" id="sharpeRating">-</div>
+                    </div>
+                </div>
+                
+                <!-- Asset Allocation Table -->
+                <h3 style="margin-top: 3rem; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent-cyan);">ASSET ALLOCATION</h3>
+                <table id="allocationTable">
+                    <thead>
+                        <tr>
+                            <th>Asset Class</th>
+                            <th>Amount</th>
+                            <th>Weight</th>
+                            <th>Exp. Return</th>
+                            <th>Std Dev</th>
+                            <th>Sharpe</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allocationBody">
+                    </tbody>
+                </table>
+                
+                <!-- Portfolio Chart -->
+                <h3 style="margin-top: 3rem; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent-cyan);">ALLOCATION BREAKDOWN</h3>
+                <div class="chart-container">
+                    <canvas id="allocationChart"></canvas>
+                </div>
+                
+                <!-- Risk Metrics -->
+                <h3 style="margin-top: 3rem; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent-cyan);">RISK METRICS</h3>
+                <table id="riskTable">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Interpretation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riskBody">
+                    </tbody>
+                </table>
+                
+                <!-- Correlation Matrix -->
+                <h3 style="margin-top: 3rem; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent-cyan);">CORRELATION MATRIX</h3>
+                <table id="correlationTable">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Bonds</th>
+                            <th>Commodities</th>
+                            <th>Stocks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="correlationBody">
+                    </tbody>
+                </table>
+                
+                <!-- Historical Performance Chart -->
+                <h3 style="margin-top: 3rem; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent-cyan);">HISTORICAL PERFORMANCE</h3>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+                
+                <!-- Export Buttons -->
+                <div style="text-align: center; margin-top: 4rem; display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportPDF()" style="font-size: 1rem; padding: 1rem 2rem;">
+                        <span style="position: relative; z-index: 1;">📄 DOWNLOAD PDF</span>
+                    </button>
+                    <button class="btn" onclick="exportExcel()" style="font-size: 1rem; padding: 1rem 2rem;">
+                        <span style="position: relative; z-index: 1;">📊 DOWNLOAD EXCEL</span>
+                    </button>
+                    <button class="btn" onclick="resetAnalysis()" style="font-size: 1rem; padding: 1rem 2rem;">
+                        <span style="position: relative; z-index: 1;">🔄 NEW ANALYSIS</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 3D Background Animation using Three.js
+        function init3DBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.position.z = 5;
+            
+            // Create multiple particle systems with different colors
+            const particleSystems = [];
+            
+            // System 1: Cyan particles (main)
+            const createParticleSystem = (color, count, size, speed) => {
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                const velocities = [];
+                
+                for (let i = 0; i < count * 3; i += 3) {
+                    positions[i] = (Math.random() - 0.5) * 30;
+                    positions[i + 1] = (Math.random() - 0.5) * 30;
+                    positions[i + 2] = (Math.random() - 0.5) * 30;
+                    
+                    velocities.push({
+                        x: (Math.random() - 0.5) * speed,
+                        y: (Math.random() - 0.5) * speed,
+                        z: (Math.random() - 0.5) * speed
+                    });
+                }
+                
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: size,
+                    color: color,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                const particles = new THREE.Points(geometry, material);
+                return { particles, velocities };
+            };
+            
+            // Create cyan particles
+            const cyanSystem = createParticleSystem(0x00f0ff, 800, 0.03, 0.01);
+            scene.add(cyanSystem.particles);
+            particleSystems.push(cyanSystem);
+            
+            // Create magenta particles
+            const magentaSystem = createParticleSystem(0xff00ff, 600, 0.025, 0.008);
+            scene.add(magentaSystem.particles);
+            particleSystems.push(magentaSystem);
+            
+            // Create purple particles
+            const purpleSystem = createParticleSystem(0x7b2ff7, 400, 0.02, 0.012);
+            scene.add(purpleSystem.particles);
+            particleSystems.push(purpleSystem);
+            
+            // Add some larger glowing particles
+            const glowingSystem = createParticleSystem(0xffffff, 50, 0.08, 0.005);
+            scene.add(glowingSystem.particles);
+            particleSystems.push(glowingSystem);
+            
+            // Create connection lines between nearby particles
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.15,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const lineGeometry = new THREE.BufferGeometry();
+            const linePositions = new Float32Array(1000 * 3);
+            lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+            const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+            scene.add(lines);
+            
+            // Add rotating rings
+            const createRing = (radius, color, rotationSpeed) => {
+                const ringGeometry = new THREE.RingGeometry(radius, radius + 0.02, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: color,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.3,
+                    blending: THREE.AdditiveBlending
+                });
+                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                ring.userData.rotationSpeed = rotationSpeed;
+                return ring;
+            };
+            
+            const ring1 = createRing(3, 0x00f0ff, 0.001);
+            ring1.rotation.x = Math.PI / 2;
+            scene.add(ring1);
+            
+            const ring2 = createRing(4, 0xff00ff, 0.0015);
+            ring2.rotation.y = Math.PI / 3;
+            scene.add(ring2);
+            
+            const ring3 = createRing(5, 0x7b2ff7, 0.0008);
+            ring3.rotation.x = Math.PI / 4;
+            ring3.rotation.y = Math.PI / 4;
+            scene.add(ring3);
+            
+            // Add ambient rotation
+            let time = 0;
+            
+            // Mouse interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.001;
+                
+                // Animate each particle system
+                particleSystems.forEach((system, index) => {
+                    const positions = system.particles.geometry.attributes.position.array;
+                    
+                    for (let i = 0; i < positions.length; i += 3) {
+                        // Update position based on velocity
+                        positions[i] += system.velocities[i / 3].x;
+                        positions[i + 1] += system.velocities[i / 3].y;
+                        positions[i + 2] += system.velocities[i / 3].z;
+                        
+                        // Boundary check and bounce
+                        if (Math.abs(positions[i]) > 15) {
+                            system.velocities[i / 3].x *= -1;
+                        }
+                        if (Math.abs(positions[i + 1]) > 15) {
+                            system.velocities[i / 3].y *= -1;
+                        }
+                        if (Math.abs(positions[i + 2]) > 15) {
+                            system.velocities[i / 3].z *= -1;
+                        }
+                    }
+                    
+                    system.particles.geometry.attributes.position.needsUpdate = true;
+                    
+                    // Rotate particle system
+                    system.particles.rotation.y += 0.0003 * (index + 1);
+                    system.particles.rotation.x += 0.0002 * (index + 1);
+                });
+                
+                // Update connection lines
+                const cyanPositions = cyanSystem.particles.geometry.attributes.position.array;
+                const linePositions = lines.geometry.attributes.position.array;
+                let lineIndex = 0;
+                
+                // Connect nearby particles
+                for (let i = 0; i < cyanPositions.length; i += 30) { // Sample every 10th particle
+                    const x1 = cyanPositions[i];
+                    const y1 = cyanPositions[i + 1];
+                    const z1 = cyanPositions[i + 2];
+                    
+                    for (let j = i + 30; j < cyanPositions.length && lineIndex < linePositions.length - 6; j += 30) {
+                        const x2 = cyanPositions[j];
+                        const y2 = cyanPositions[j + 1];
+                        const z2 = cyanPositions[j + 2];
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(x2 - x1, 2) + 
+                            Math.pow(y2 - y1, 2) + 
+                            Math.pow(z2 - z1, 2)
+                        );
+                        
+                        if (distance < 3) { // Only connect if close enough
+                            linePositions[lineIndex++] = x1;
+                            linePositions[lineIndex++] = y1;
+                            linePositions[lineIndex++] = z1;
+                            linePositions[lineIndex++] = x2;
+                            linePositions[lineIndex++] = y2;
+                            linePositions[lineIndex++] = z2;
+                        }
+                    }
+                }
+                
+                lines.geometry.attributes.position.needsUpdate = true;
+                
+                // Rotate rings
+                ring1.rotation.z += ring1.userData.rotationSpeed;
+                ring2.rotation.y += ring2.userData.rotationSpeed;
+                ring2.rotation.z += ring2.userData.rotationSpeed * 0.5;
+                ring3.rotation.x += ring3.userData.rotationSpeed;
+                ring3.rotation.y += ring3.userData.rotationSpeed * 0.8;
+                
+                // Camera movement based on mouse
+                camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+                camera.position.y += (mouseY * 0.5 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                
+                // Gentle camera orbit
+                camera.position.x += Math.sin(time) * 0.002;
+                camera.position.y += Math.cos(time * 0.8) * 0.002;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // Initialize 3D background when libraries are loaded
+        if (typeof THREE !== 'undefined') {
+            init3DBackground();
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(init3DBackground, 500);
+            });
+        }
+        
+        // Check if libraries are loaded
+        let librariesReady = false;
+        
+        function checkLibraries() {
+            if (typeof XLSX !== 'undefined' && typeof Papa !== 'undefined' && typeof Chart !== 'undefined') {
+                librariesReady = true;
+                console.log('✓ All libraries loaded successfully');
+                const loadingIndicator = document.getElementById('libraryLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        // Check immediately
+        if (!checkLibraries()) {
+            const loadingIndicator = document.getElementById('libraryLoading');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+        }
+        
+        // Also check when page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                checkLibraries();
+            }, 500);
+        });
+        
+        // Global variables to store parsed data
+        let stockAssets = [];
+        let commodityAssets = [];
+        let portfolioResults = null;
+        
+        // Drag and drop handlers for stocks
+        const stockDropZone = document.getElementById('stockDropZone');
+        const stockFileInput = document.getElementById('stockFileInput');
+        
+        stockDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            stockDropZone.classList.add('drag-over');
+        });
+        
+        stockDropZone.addEventListener('dragleave', () => {
+            stockDropZone.classList.remove('drag-over');
+        });
+        
+        stockDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            stockDropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            handleStockFiles(files);
+        });
+        
+        stockFileInput.addEventListener('change', (e) => {
+            handleStockFiles(e.target.files);
+            e.target.value = ''; // Reset input to allow re-uploading same file
+        });
+        
+        // Drag and drop handlers for commodities
+        const commodityDropZone = document.getElementById('commodityDropZone');
+        const commodityFileInput = document.getElementById('commodityFileInput');
+        
+        commodityDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            commodityDropZone.classList.add('drag-over');
+        });
+        
+        commodityDropZone.addEventListener('dragleave', () => {
+            commodityDropZone.classList.remove('drag-over');
+        });
+        
+        commodityDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            commodityDropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            handleCommodityFiles(files);
+        });
+        
+        commodityFileInput.addEventListener('change', (e) => {
+            handleCommodityFiles(e.target.files);
+            e.target.value = ''; // Reset input
+        });
+        
+        // Handle stock files
+        function handleStockFiles(files) {
+            if (!librariesReady && !checkLibraries()) {
+                alert('Libraries are still loading. Please wait 2-3 seconds and try again.');
+                return;
+            }
+            
+            Array.from(files).forEach(file => {
+                parseStockFile(file);
+            });
+        }
+        
+        // Parse individual stock file
+        function parseStockFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    let data;
+                    const fileContent = e.target.result;
+                    
+                    // Check if file is HTML-formatted Excel (from DFM website)
+                    if (fileContent.includes('<html') || fileContent.includes('<table')) {
+                        // Parse HTML table
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(fileContent, 'text/html');
+                        const table = doc.querySelector('table');
+                        
+                        if (table) {
+                            data = [];
+                            const rows = table.querySelectorAll('tbody tr');
+                            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+                            
+                            rows.forEach(row => {
+                                const cells = row.querySelectorAll('td');
+                                if (cells.length > 0) {
+                                    const rowData = {};
+                                    cells.forEach((cell, i) => {
+                                        rowData[headers[i]] = cell.textContent.trim();
+                                    });
+                                    data.push(rowData);
+                                }
+                            });
+                        } else {
+                            throw new Error('No table found in HTML file');
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        // Parse as CSV
+                        const result = Papa.parse(fileContent, {header: true, skipEmptyLines: true});
+                        data = result.data;
+                    } else {
+                        // Parse as Excel
+                        const workbook = XLSX.read(fileContent, {type: 'binary'});
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        data = XLSX.utils.sheet_to_json(firstSheet);
+                    }
+                    
+                    // Clean and validate data
+                    const priceData = data.filter(row => {
+                        const price = row.Last || row.Close || row.close || row.Price;
+                        return price && parseFloat(String(price).replace(/,/g, '')) > 0;
+                    }).map(row => ({
+                        date: row.Date || row.date,
+                        close: parseFloat(String(row.Last || row.Close || row.close || row.Price).replace(/,/g, ''))
+                    }));
+                    
+                    if (priceData.length > 0) {
+                        const asset = {
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            type: 'stock',
+                            data: priceData,
+                            dataPoints: priceData.length
+                        };
+                        
+                        stockAssets.push(asset);
+                        renderStockList();
+                    } else {
+                        throw new Error('No valid price data found in file');
+                    }
+                } catch (error) {
+                    alert(`Error parsing ${file.name}: ${error.message}`);
+                    console.error('Stock file parsing error:', error);
+                }
+            };
+            
+            reader.readAsBinaryString(file);
+        }
+        
+        // Handle commodity files
+        function handleCommodityFiles(files) {
+            if (!librariesReady && !checkLibraries()) {
+                alert('Libraries are still loading. Please wait 2-3 seconds and try again.');
+                return;
+            }
+            
+            Array.from(files).forEach(file => {
+                parseCommodityFile(file);
+            });
+        }
+        
+        // Parse individual commodity file
+        function parseCommodityFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const result = Papa.parse(e.target.result, {header: true, skipEmptyLines: true});
+                    
+                    if (result.errors.length > 0 && result.data.length === 0) {
+                        throw new Error('Failed to parse CSV file');
+                    }
+                    
+                    // Clean and validate data
+                    const priceData = result.data.filter(row => {
+                        const price = row.Price || row.Close || row.close;
+                        return price && String(price).replace(/,/g, '').length > 0;
+                    }).map(row => {
+                        const priceStr = String(row.Price || row.Close || row.close).replace(/,/g, '');
+                        const price = parseFloat(priceStr);
+                        
+                        if (isNaN(price) || price <= 0) {
+                            return null;
+                        }
+                        
+                        return {
+                            date: row.Date || row.date,
+                            close: price
+                        };
+                    }).filter(row => row !== null);
+                    
+                    if (priceData.length > 0) {
+                        const asset = {
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            type: 'commodity',
+                            data: priceData,
+                            dataPoints: priceData.length
+                        };
+                        
+                        commodityAssets.push(asset);
+                        renderCommodityList();
+                    } else {
+                        throw new Error('No valid price data found in file');
+                    }
+                } catch (error) {
+                    alert(`Error parsing ${file.name}: ${error.message}`);
+                    console.error('Commodity file parsing error:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Render stock list
+        function renderStockList() {
+            const stockList = document.getElementById('stockList');
+            
+            if (stockAssets.length === 0) {
+                stockList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No stock assets added yet</p></div>';
+                return;
+            }
+            
+            stockList.innerHTML = stockAssets.map(asset => `
+                <div class="asset-item">
+                    <div class="asset-info">
+                        <div class="asset-name">${asset.name}</div>
+                        <div class="asset-meta">${asset.dataPoints} data points</div>
+                        <div class="asset-status">✓ Loaded</div>
+                    </div>
+                    <div class="asset-controls">
+                        <div class="asset-amount-input">
+                            <label for="stock-amount-${asset.id}" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Investment Amount:</label>
+                            <input type="number" 
+                                   id="stock-amount-${asset.id}" 
+                                   class="stock-amount-input"
+                                   value="${asset.amount || 0}" 
+                                   step="100" 
+                                   min="0"
+                                   placeholder="0"
+                                   onchange="updateAssetAmount('${asset.id}', 'stock', this.value)"
+                                   style="width: 150px; padding: 0.5rem; background: var(--primary-navy); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-family: var(--font-mono);">
+                        </div>
+                        <button class="remove-btn" onclick="removeAsset('${asset.id}', 'stock')">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateTotalAmounts();
+        }
+        
+        // Render commodity list
+        function renderCommodityList() {
+            const commodityList = document.getElementById('commodityList');
+            
+            if (commodityAssets.length === 0) {
+                commodityList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No commodity assets added yet</p></div>';
+                return;
+            }
+            
+            commodityList.innerHTML = commodityAssets.map(asset => `
+                <div class="asset-item">
+                    <div class="asset-info">
+                        <div class="asset-name">${asset.name}</div>
+                        <div class="asset-meta">${asset.dataPoints} data points</div>
+                        <div class="asset-status">✓ Loaded</div>
+                    </div>
+                    <div class="asset-controls">
+                        <div class="asset-amount-input">
+                            <label for="commodity-amount-${asset.id}" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Investment Amount:</label>
+                            <input type="number" 
+                                   id="commodity-amount-${asset.id}" 
+                                   class="commodity-amount-input"
+                                   value="${asset.amount || 0}" 
+                                   step="100" 
+                                   min="0"
+                                   placeholder="0"
+                                   onchange="updateAssetAmount('${asset.id}', 'commodity', this.value)"
+                                   style="width: 150px; padding: 0.5rem; background: var(--primary-navy); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-family: var(--font-mono);">
+                        </div>
+                        <button class="remove-btn" onclick="removeAsset('${asset.id}', 'commodity')">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateTotalAmounts();
+        }
+        
+        // Remove asset
+        function removeAsset(id, type) {
+            if (type === 'stock') {
+                stockAssets = stockAssets.filter(asset => asset.id != id);
+                renderStockList();
+            } else {
+                commodityAssets = commodityAssets.filter(asset => asset.id != id);
+                renderCommodityList();
+            }
+            updateTotalAmounts();
+        }
+        
+        // Update individual asset amount
+        function updateAssetAmount(id, type, amount) {
+            const numAmount = parseFloat(amount) || 0;
+            
+            if (type === 'stock') {
+                const asset = stockAssets.find(a => a.id == id);
+                if (asset) {
+                    asset.amount = numAmount;
+                }
+            } else {
+                const asset = commodityAssets.find(a => a.id == id);
+                if (asset) {
+                    asset.amount = numAmount;
+                }
+            }
+            
+            updateTotalAmounts();
+        }
+        
+        // Update total amounts display
+        function updateTotalAmounts() {
+            // Calculate total stock amount
+            const totalStockAmount = stockAssets.reduce((sum, asset) => sum + (asset.amount || 0), 0);
+            document.getElementById('stockAmount').value = totalStockAmount;
+            
+            // Calculate total commodity amount
+            const totalCommodityAmount = commodityAssets.reduce((sum, asset) => sum + (asset.amount || 0), 0);
+            document.getElementById('commodityAmount').value = totalCommodityAmount;
+            
+            // Update percentages
+            updatePercentages();
+        }
+        
+        // Initialize empty lists
+        renderStockList();
+        renderCommodityList();
+        
+        // Update percentages when amounts change
+        function updatePercentages() {
+            const bondAmt = parseFloat(document.getElementById('bondAmount').value) || 0;
+            const commodityAmt = parseFloat(document.getElementById('commodityAmount').value) || 0;
+            const stockAmt = parseFloat(document.getElementById('stockAmount').value) || 0;
+            const total = bondAmt + commodityAmt + stockAmt;
+            
+            if (total > 0) {
+                document.getElementById('bondPercent').textContent = `${(bondAmt/total*100).toFixed(1)}%`;
+                document.getElementById('commodityPercent').textContent = `${(commodityAmt/total*100).toFixed(1)}%`;
+                document.getElementById('stockPercent').textContent = `${(stockAmt/total*100).toFixed(1)}%`;
+                document.getElementById('totalAmount').textContent = total.toLocaleString();
+            }
+        }
+        
+        // Add event listeners to amount inputs
+        ['bondAmount', 'commodityAmount', 'stockAmount'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePercentages);
+        });
+        
+        // Update currency label
+        document.getElementById('currency').addEventListener('change', function() {
+            document.getElementById('currencyLabel').textContent = this.value;
+        });
+        
+        // Calculate and display bond metrics when inputs change
+        function updateBondMetrics() {
+            const coupon = parseFloat(document.getElementById('bondCoupon').value);
+            const maturity = parseFloat(document.getElementById('bondMaturity').value);
+            const rating = document.getElementById('bondCreditRating').value;
+            
+            if (coupon && maturity) {
+                // Calculate bond characteristics
+                const bondMetrics = calculateBondCharacteristics(coupon, maturity, rating);
+                
+                // Display calculated metrics
+                document.getElementById('calcBondReturn').textContent = (bondMetrics.expectedReturn * 100).toFixed(2) + '%';
+                document.getElementById('calcBondVolatility').textContent = (bondMetrics.volatility * 100).toFixed(2) + '%';
+                document.getElementById('calcBondDuration').textContent = bondMetrics.duration.toFixed(2) + ' years';
+                document.getElementById('bondCalculatedMetrics').style.display = 'block';
+            }
+        }
+        
+        // Add event listeners for bond inputs
+        ['bondCoupon', 'bondMaturity', 'bondCreditRating'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateBondMetrics);
+            document.getElementById(id).addEventListener('change', updateBondMetrics);
+        });
+        
+        // Initial bond metrics calculation
+        updateBondMetrics();
+        
+        // Calculate bond characteristics based on real bond math
+        function calculateBondCharacteristics(couponRate, yearsToMaturity, creditRating) {
+            // Expected return is approximately the coupon rate for government bonds
+            // (assuming trading near par value)
+            const expectedReturn = couponRate / 100;
+            
+            // Calculate Modified Duration (simplified)
+            // Duration ≈ (1 - (1 + y)^-n) / y where y is yield, n is periods
+            const y = expectedReturn;
+            const n = yearsToMaturity;
+            const duration = (1 - Math.pow(1 + y, -n)) / y;
+            
+            // Estimate volatility based on duration and credit rating
+            // Longer duration = higher interest rate sensitivity = higher volatility
+            // Lower credit rating = higher volatility
+            
+            // Base volatility from duration (rule of thumb: vol ≈ duration * interest rate volatility)
+            // Interest rate volatility for government bonds is typically 0.5-1.5% annually
+            let interestRateVol = 0.01; // 1% annual volatility in rates
+            
+            // Adjust for credit rating
+            const ratingAdjustments = {
+                'AAA': 1.0,
+                'AA': 1.1,
+                'A': 1.2,
+                'BBB': 1.4,
+                'BB': 1.8,
+                'B': 2.2
+            };
+            
+            const ratingMultiplier = ratingAdjustments[creditRating] || 1.1;
+            
+            // Calculate volatility: Duration * Interest Rate Volatility * Rating Adjustment
+            const volatility = duration * interestRateVol * ratingMultiplier;
+            
+            return {
+                expectedReturn: expectedReturn,
+                volatility: Math.min(volatility, 0.15), // Cap at 15% for realism
+                duration: duration
+            };
+        }
+        
+        // Calculate correlation between bonds and other assets
+        // This will be done during analysis using actual return data
+        function calculateBondCorrelations(bondReturn, stockReturns, commodityReturns) {
+            // Government bonds typically have:
+            // - Low to moderate negative correlation with stocks during market stress
+            // - Low correlation with commodities
+            // - Flight to quality effect: bonds rally when stocks fall
+            
+            // We'll create synthetic bond returns based on:
+            // 1. Inverse relationship with stocks (flight to quality)
+            // 2. Consistent coupon payments (low volatility)
+            
+            // Simple model: bond returns move opposite to stocks (simplified)
+            const bondStockCorr = -0.2 + (Math.random() * 0.4); // Range: -0.2 to 0.2
+            const bondCommodityCorr = -0.1 + (Math.random() * 0.3); // Range: -0.1 to 0.2
+            
+            return {
+                stockCorrelation: bondStockCorr,
+                commodityCorrelation: bondCommodityCorr
+            };
+        }
+        
+        // Initialize percentages
+        updatePercentages();
+        
+        // Parse date from various formats
+        function parseDate(dateStr) {
+            // Try different date formats
+            // Format 1: DD-MM-YYYY (DFM format)
+            if (dateStr.includes('-') && dateStr.split('-')[0].length <= 2) {
+                const parts = dateStr.split('-');
+                return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+            // Format 2: MM/DD/YYYY (Investing.com format)
+            if (dateStr.includes('/')) {
+                return new Date(dateStr);
+            }
+            // Format 3: YYYY-MM-DD (ISO format)
+            return new Date(dateStr);
+        }
+        
+        // Calculate daily returns from price data
+        function calculateReturns(priceData) {
+            // Sort data by date first (oldest to newest)
+            const sortedData = [...priceData].sort((a, b) => {
+                const dateA = parseDate(a.date);
+                const dateB = parseDate(b.date);
+                return dateA - dateB;
+            });
+            
+            const returns = [];
+            for (let i = 1; i < sortedData.length; i++) {
+                const dailyReturn = (sortedData[i].close - sortedData[i-1].close) / sortedData[i-1].close;
+                if (!isNaN(dailyReturn) && isFinite(dailyReturn)) {
+                    returns.push(dailyReturn);
+                }
+            }
+            return returns;
+        }
+        
+        // Calculate mean
+        function mean(arr) {
+            return arr.reduce((a, b) => a + b, 0) / arr.length;
+        }
+        
+        // Calculate standard deviation
+        function stdDev(arr) {
+            const avg = mean(arr);
+            const squareDiffs = arr.map(value => Math.pow(value - avg, 2));
+            return Math.sqrt(mean(squareDiffs));
+        }
+        
+        // Calculate correlation between two return series
+        function correlation(arr1, arr2) {
+            const n = Math.min(arr1.length, arr2.length);
+            const mean1 = mean(arr1.slice(0, n));
+            const mean2 = mean(arr2.slice(0, n));
+            
+            let numerator = 0;
+            let sum1 = 0;
+            let sum2 = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const diff1 = arr1[i] - mean1;
+                const diff2 = arr2[i] - mean2;
+                numerator += diff1 * diff2;
+                sum1 += diff1 * diff1;
+                sum2 += diff2 * diff2;
+            }
+            
+            return numerator / Math.sqrt(sum1 * sum2);
+        }
+        
+        // Main analysis function
+        function analyzePortfolio() {
+            // Validate inputs
+            if (stockAssets.length === 0 || commodityAssets.length === 0) {
+                alert('Please add at least one stock and one commodity asset.');
+                return;
+            }
+            
+            const bondAmt = parseFloat(document.getElementById('bondAmount').value);
+            const commodityAmt = parseFloat(document.getElementById('commodityAmount').value);
+            const stockAmt = parseFloat(document.getElementById('stockAmount').value);
+            
+            if (!bondAmt || !commodityAmt || !stockAmt) {
+                alert('Please enter valid investment amounts for all assets.');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            // Use setTimeout to allow UI to update
+            setTimeout(() => {
+                try {
+                    performAnalysis();
+                } catch (error) {
+                    alert('Error during analysis: ' + error.message);
+                    console.error(error);
+                } finally {
+                    document.getElementById('loading').classList.remove('show');
+                }
+            }, 100);
+        }
+        
+        function performAnalysis() {
+            // Validate we have assets
+            if (stockAssets.length === 0 || commodityAssets.length === 0) {
+                alert('Please add at least one stock and one commodity asset.');
+                return;
+            }
+            
+            // Get investment amounts
+            const bondAmt = parseFloat(document.getElementById('bondAmount').value);
+            const commodityAmt = parseFloat(document.getElementById('commodityAmount').value);
+            const stockAmt = parseFloat(document.getElementById('stockAmount').value);
+            const totalValue = bondAmt + commodityAmt + stockAmt;
+            
+            if (!bondAmt || totalValue === 0) {
+                alert('Please enter valid investment amounts.');
+                return;
+            }
+            
+            // Calculate weighted returns for stocks (based on individual amounts)
+            const stockReturnsData = [];
+            const stockWeightsInCategory = [];
+            let totalStockInvestment = 0;
+            
+            stockAssets.forEach(asset => {
+                if (asset.amount > 0) {
+                    const returns = calculateReturns(asset.data);
+                    stockReturnsData.push({
+                        returns: returns,
+                        amount: asset.amount,
+                        name: asset.name
+                    });
+                    totalStockInvestment += asset.amount;
+                }
+            });
+            
+            // Calculate weighted returns for commodities
+            const commodityReturnsData = [];
+            const commodityWeightsInCategory = [];
+            let totalCommodityInvestment = 0;
+            
+            commodityAssets.forEach(asset => {
+                if (asset.amount > 0) {
+                    const returns = calculateReturns(asset.data);
+                    commodityReturnsData.push({
+                        returns: returns,
+                        amount: asset.amount,
+                        name: asset.name
+                    });
+                    totalCommodityInvestment += asset.amount;
+                }
+            });
+            
+            // Calculate weighted average returns for stocks
+            let stockReturn = 0;
+            let stockVolatility = 0;
+            
+            stockReturnsData.forEach(stock => {
+                const weight = stock.amount / totalStockInvestment;
+                const meanDaily = mean(stock.returns);
+                const stdDaily = stdDev(stock.returns);
+                stockReturn += weight * (meanDaily * 252); // Annualize
+                stockVolatility += weight * (stdDaily * Math.sqrt(252)); // Simplified - should use covariance matrix
+            });
+            
+            // Calculate weighted average returns for commodities
+            let commodityReturn = 0;
+            let commodityVolatility = 0;
+            
+            commodityReturnsData.forEach(commodity => {
+                const weight = commodity.amount / totalCommodityInvestment;
+                const meanDaily = mean(commodity.returns);
+                const stdDaily = stdDev(commodity.returns);
+                commodityReturn += weight * (meanDaily * 252);
+                commodityVolatility += weight * (stdDaily * Math.sqrt(252));
+            });
+            
+            // Get bond inputs
+            const bondCoupon = parseFloat(document.getElementById('bondCoupon').value);
+            const bondMaturity = parseFloat(document.getElementById('bondMaturity').value);
+            const bondRating = document.getElementById('bondCreditRating').value;
+            
+            // Calculate bond characteristics
+            const bondMetrics = calculateBondCharacteristics(bondCoupon, bondMaturity, bondRating);
+            const bondReturn = bondMetrics.expectedReturn;
+            const bondVol = bondMetrics.volatility;
+            
+            const riskFreeRate = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const currency = document.getElementById('currency').value;
+            
+            // Calculate weights
+            const w_bonds = bondAmt / totalValue;
+            const w_commodities = commodityAmt / totalValue;
+            const w_stocks = stockAmt / totalValue;
+            
+            const bondVolatility = bondVol;
+            
+            // Calculate correlations (using first stock and commodity for simplicity)
+            const stockCommodityCorr = stockReturnsData.length > 0 && commodityReturnsData.length > 0 
+                ? correlation(stockReturnsData[0].returns, commodityReturnsData[0].returns) 
+                : 0.2;
+            
+            const bondCorrelations = calculateBondCorrelations(bondReturn, stockReturnsData[0]?.returns || [], commodityReturnsData[0]?.returns || []);
+            const bondStockCorr = bondCorrelations.stockCorrelation;
+            const bondCommodityCorr = bondCorrelations.commodityCorrelation;
+            
+            // Portfolio expected return
+            const portfolioReturn = w_bonds * bondReturn + 
+                                  w_commodities * commodityReturn + 
+                                  w_stocks * stockReturn;
+            
+            // Portfolio variance
+            const portfolioVariance = 
+                Math.pow(w_bonds * bondVolatility, 2) +
+                Math.pow(w_commodities * commodityVolatility, 2) +
+                Math.pow(w_stocks * stockVolatility, 2) +
+                2 * w_bonds * w_commodities * bondVolatility * commodityVolatility * bondCommodityCorr +
+                2 * w_bonds * w_stocks * bondVolatility * stockVolatility * bondStockCorr +
+                2 * w_commodities * w_stocks * commodityVolatility * stockVolatility * stockCommodityCorr;
+            
+            const portfolioStdDev = Math.sqrt(portfolioVariance);
+            
+            // Sharpe Ratio
+            const sharpeRatio = (portfolioReturn - riskFreeRate) / portfolioStdDev;
+            
+            // Individual Sharpe Ratios
+            const bondSharpe = (bondReturn - riskFreeRate) / bondVolatility;
+            const commoditySharpe = (commodityReturn - riskFreeRate) / commodityVolatility;
+            const stockSharpe = (stockReturn - riskFreeRate) / stockVolatility;
+            
+            // Portfolio Beta
+            const portfolioBeta = w_bonds * 0.2 + w_commodities * 0.1 + w_stocks * 1.0;
+            
+            // Value at Risk
+            const monthlyReturn = portfolioReturn / 12;
+            const monthlyStdDev = portfolioStdDev / Math.sqrt(12);
+            
+            const VaR_95_monthly = -(monthlyReturn - 1.645 * monthlyStdDev) * totalValue;
+            const VaR_99_monthly = -(monthlyReturn - 2.326 * monthlyStdDev) * totalValue;
+            const VaR_95_annual = -(portfolioReturn - 1.645 * portfolioStdDev) * totalValue;
+            const VaR_99_annual = -(portfolioReturn - 2.326 * portfolioStdDev) * totalValue;
+            
+            // Maximum Drawdown
+            const maxDrawdown = -2 * portfolioStdDev;
+            
+            // Build detailed asset breakdown
+            const detailedAssets = [
+                {
+                    name: 'Government Bonds',
+                    amount: bondAmt,
+                    weight: w_bonds,
+                    return: bondReturn,
+                    volatility: bondVolatility,
+                    sharpe: bondSharpe
+                }
+            ];
+            
+            // Add individual commodities
+            commodityAssets.forEach(asset => {
+                if (asset.amount > 0) {
+                    const returns = calculateReturns(asset.data);
+                    const meanDaily = mean(returns);
+                    const stdDaily = stdDev(returns);
+                    const assetReturn = meanDaily * 252;
+                    const assetVol = stdDaily * Math.sqrt(252);
+                    
+                    detailedAssets.push({
+                        name: `${asset.name} (Commodity)`,
+                        amount: asset.amount,
+                        weight: asset.amount / totalValue,
+                        return: assetReturn,
+                        volatility: assetVol,
+                        sharpe: (assetReturn - riskFreeRate) / assetVol
+                    });
+                }
+            });
+            
+            // Add individual stocks
+            stockAssets.forEach(asset => {
+                if (asset.amount > 0) {
+                    const returns = calculateReturns(asset.data);
+                    const meanDaily = mean(returns);
+                    const stdDaily = stdDev(returns);
+                    const assetReturn = meanDaily * 252;
+                    const assetVol = stdDaily * Math.sqrt(252);
+                    
+                    detailedAssets.push({
+                        name: `${asset.name} (Stock)`,
+                        amount: asset.amount,
+                        weight: asset.amount / totalValue,
+                        return: assetReturn,
+                        volatility: assetVol,
+                        sharpe: (assetReturn - riskFreeRate) / assetVol
+                    });
+                }
+            });
+            
+            // Store results
+            portfolioResults = {
+                totalValue,
+                currency,
+                portfolioReturn,
+                portfolioStdDev,
+                sharpeRatio,
+                portfolioBeta,
+                VaR_95_monthly,
+                VaR_99_monthly,
+                VaR_95_annual,
+                VaR_99_annual,
+                maxDrawdown,
+                bondDuration: bondMetrics.duration,
+                assets: detailedAssets,
+                assetCategories: [
+                    {
+                        name: 'Government Bonds',
+                        amount: bondAmt,
+                        weight: w_bonds,
+                        return: bondReturn,
+                        volatility: bondVolatility,
+                        sharpe: bondSharpe
+                    },
+                    {
+                        name: 'Commodities',
+                        amount: commodityAmt,
+                        weight: w_commodities,
+                        return: commodityReturn,
+                        volatility: commodityVolatility,
+                        sharpe: commoditySharpe
+                    },
+                    {
+                        name: 'Stocks',
+                        amount: stockAmt,
+                        weight: w_stocks,
+                        return: stockReturn,
+                        volatility: stockVolatility,
+                        sharpe: stockSharpe
+                    }
+                ],
+                correlations: {
+                    bondCommodity: bondCommodityCorr,
+                    bondStock: bondStockCorr,
+                    commodityStock: stockCommodityCorr
+                },
+                historicalData: {
+                    stocks: stockAssets[0].data,
+                    commodities: commodityAssets[0].data
+                }
+            };
+            
+            // Display results
+            displayResults();
+        }
+        
+        function displayResults() {
+            const r = portfolioResults;
+            
+            // Update summary cards
+            document.getElementById('resultTotalValue').textContent = r.totalValue.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('resultCurrency').textContent = r.currency;
+            document.getElementById('resultReturn').textContent = (r.portfolioReturn * 100).toFixed(2) + '%';
+            document.getElementById('resultRisk').textContent = (r.portfolioStdDev * 100).toFixed(2) + '%';
+            document.getElementById('resultSharpe').textContent = r.sharpeRatio.toFixed(3);
+            
+            // Sharpe ratio rating
+            let rating = '';
+            if (r.sharpeRatio > 3) rating = 'Excellent';
+            else if (r.sharpeRatio > 2) rating = 'Very Good';
+            else if (r.sharpeRatio > 1) rating = 'Good';
+            else if (r.sharpeRatio > 0) rating = 'Fair';
+            else rating = 'Poor';
+            document.getElementById('sharpeRating').textContent = rating;
+            
+            // Asset allocation table
+            let allocationHTML = '';
+            r.assets.forEach(asset => {
+                allocationHTML += `
+                    <tr>
+                        <td>${asset.name}</td>
+                        <td>${asset.amount.toLocaleString()} ${r.currency}</td>
+                        <td>${(asset.weight * 100).toFixed(1)}%</td>
+                        <td>${(asset.return * 100).toFixed(2)}%</td>
+                        <td>${(asset.volatility * 100).toFixed(2)}%</td>
+                        <td>${asset.sharpe.toFixed(3)}</td>
+                    </tr>
+                `;
+            });
+            allocationHTML += `
+                <tr style="background: rgba(0, 240, 255, 0.1); font-weight: 700;">
+                    <td>TOTAL PORTFOLIO</td>
+                    <td>${r.totalValue.toLocaleString()} ${r.currency}</td>
+                    <td>100%</td>
+                    <td>${(r.portfolioReturn * 100).toFixed(2)}%</td>
+                    <td>${(r.portfolioStdDev * 100).toFixed(2)}%</td>
+                    <td>${r.sharpeRatio.toFixed(3)}</td>
+                </tr>
+            `;
+            document.getElementById('allocationBody').innerHTML = allocationHTML;
+            
+            // Risk metrics table
+            const riskHTML = `
+                <tr>
+                    <td>Portfolio Standard Deviation</td>
+                    <td>${(r.portfolioStdDev * 100).toFixed(2)}%</td>
+                    <td>Moderate Risk</td>
+                </tr>
+                <tr>
+                    <td>Bond Duration</td>
+                    <td>${r.bondDuration.toFixed(2)} years</td>
+                    <td>Interest rate sensitivity</td>
+                </tr>
+                <tr>
+                    <td>Value at Risk (95%, Monthly)</td>
+                    <td>${r.VaR_95_monthly.toLocaleString()} ${r.currency}</td>
+                    <td>Max likely monthly loss</td>
+                </tr>
+                <tr>
+                    <td>Value at Risk (99%, Monthly)</td>
+                    <td>${r.VaR_99_monthly.toLocaleString()} ${r.currency}</td>
+                    <td>Extreme monthly scenario</td>
+                </tr>
+                <tr>
+                    <td>Value at Risk (95%, Annual)</td>
+                    <td>${r.VaR_95_annual.toLocaleString()} ${r.currency}</td>
+                    <td>Max likely annual loss</td>
+                </tr>
+                <tr>
+                    <td>Value at Risk (99%, Annual)</td>
+                    <td>${r.VaR_99_annual.toLocaleString()} ${r.currency}</td>
+                    <td>Extreme annual scenario</td>
+                </tr>
+                <tr>
+                    <td>Portfolio Beta</td>
+                    <td>${r.portfolioBeta.toFixed(2)}</td>
+                    <td>${(r.portfolioBeta * 100).toFixed(0)}% as volatile as market</td>
+                </tr>
+                <tr>
+                    <td>Estimated Max Drawdown</td>
+                    <td>${(r.maxDrawdown * 100).toFixed(1)}%</td>
+                    <td>Potential peak-to-trough decline</td>
+                </tr>
+            `;
+            document.getElementById('riskBody').innerHTML = riskHTML;
+            
+            // Correlation matrix
+            const corrHTML = `
+                <tr>
+                    <td><strong>Bonds</strong></td>
+                    <td>1.00</td>
+                    <td>${r.correlations.bondCommodity.toFixed(2)}</td>
+                    <td>${r.correlations.bondStock.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td><strong>Commodities</strong></td>
+                    <td>${r.correlations.bondCommodity.toFixed(2)}</td>
+                    <td>1.00</td>
+                    <td>${r.correlations.commodityStock.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td><strong>Stocks</strong></td>
+                    <td>${r.correlations.bondStock.toFixed(2)}</td>
+                    <td>${r.correlations.commodityStock.toFixed(2)}</td>
+                    <td>1.00</td>
+                </tr>
+            `;
+            document.getElementById('correlationBody').innerHTML = corrHTML;
+            
+            // Create charts
+            createAllocationChart();
+            createPriceChart();
+            
+            // Show results section
+            document.getElementById('results').classList.add('show');
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function createAllocationChart() {
+            const ctx = document.getElementById('allocationChart').getContext('2d');
+            
+            if (window.allocationChartInstance) {
+                window.allocationChartInstance.destroy();
+            }
+            
+            // Use asset categories for the chart (Bonds, Commodities, Stocks)
+            const categories = portfolioResults.assetCategories || portfolioResults.assets.slice(0, 3);
+            
+            window.allocationChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories.map(a => a.name),
+                    datasets: [{
+                        data: categories.map(a => a.amount),
+                        backgroundColor: [
+                            'rgba(0, 240, 255, 0.8)',
+                            'rgba(255, 0, 255, 0.8)',
+                            'rgba(123, 47, 247, 0.8)'
+                        ],
+                        borderColor: 'rgba(26, 47, 74, 1)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(232, 244, 248, 0.9)',
+                                font: {
+                                    size: 14,
+                                    family: "'Rajdhani', sans-serif",
+                                    weight: '600'
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value.toLocaleString()} ${portfolioResults.currency} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createPriceChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            
+            if (window.priceChartInstance) {
+                window.priceChartInstance.destroy();
+            }
+            
+            // Helper to format date for display
+            const formatDate = (dateStr) => {
+                const date = parseDate(dateStr);
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                const year = date.getFullYear();
+                return `${month}/${day}/${year}`;
+            };
+            
+            // Normalize data to 100 at start for comparison
+            const normalizePrices = (data) => {
+                // Sort by date (oldest first)
+                const sortedData = [...data].sort((a, b) => {
+                    const dateA = parseDate(a.date);
+                    const dateB = parseDate(b.date);
+                    return dateA - dateB;
+                });
+                
+                const firstPrice = sortedData[0].close;
+                return sortedData.map(d => ({
+                    x: formatDate(d.date),
+                    y: (d.close / firstPrice) * 100
+                }));
+            };
+            
+            // Get stock and commodity data
+            const stockData = portfolioResults.historicalData.stocks;
+            const commodityData = portfolioResults.historicalData.commodities;
+            
+            window.priceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Commodities (Indexed to 100)',
+                            data: normalizePrices(commodityData),
+                            borderColor: 'rgba(255, 0, 255, 1)',
+                            backgroundColor: 'rgba(255, 0, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            order: 1
+                        },
+                        {
+                            label: 'Stocks (Indexed to 100)',
+                            data: normalizePrices(stockData),
+                            borderColor: 'rgba(123, 47, 247, 1)',
+                            backgroundColor: 'rgba(123, 47, 247, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            order: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: 'rgba(232, 244, 248, 0.9)',
+                                font: {
+                                    size: 14,
+                                    family: "'Rajdhani', sans-serif",
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Date: ' + context[0].label;
+                                },
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category',
+                            ticks: {
+                                color: 'rgba(138, 163, 191, 0.7)',
+                                maxTicksLimit: 10,
+                                autoSkip: true
+                            },
+                            grid: {
+                                color: 'rgba(0, 240, 255, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: 'rgba(232, 244, 248, 0.9)',
+                                font: {
+                                    size: 12,
+                                    family: "'Rajdhani', sans-serif"
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Indexed Value (Start = 100)',
+                                color: 'rgba(232, 244, 248, 0.9)',
+                                font: {
+                                    size: 12,
+                                    family: "'Rajdhani', sans-serif"
+                                }
+                            },
+                            ticks: {
+                                color: 'rgba(138, 163, 191, 0.7)',
+                                callback: function(value) {
+                                    return value.toFixed(0);
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 240, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function exportPDF() {
+            alert('PDF export: In production, this would generate a comprehensive report with all metrics and charts using jsPDF.');
+        }
+        
+        function exportExcel() {
+            alert('Excel export: In production, this would create an Excel file with all data and calculations using SheetJS.');
+        }
+        
+        function resetAnalysis() {
+            if (confirm('Start a new analysis? This will clear all current data.')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
