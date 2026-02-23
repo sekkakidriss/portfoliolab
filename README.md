@@ -15,11 +15,11 @@
 
 ## 🚀 Live Demo
 
-**Try it now:** [https://YOUR_USERNAME.github.io/portfoliolab/](https://YOUR_USERNAME.github.io/portfoliolab/)
+**Try it now:** https://sekkakidriss.github.io/portfoliolab
 
 ## 📸 Screenshots
 
-[Add screenshots here if you want]
+
 
 ## 🎯 How to Use
 
